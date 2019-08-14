@@ -14,8 +14,8 @@ $projectDir = (Get-Item $provisioningDir).parent.FullName
 
 Import-Module (Join-Path $provisioningDir 'Provisioning.psm1') -Force
 
-$installerRepo = "https://github.com/GPII/gpii-wix-installer"
-$installerBranch = "HST"
+$installerRepo = "https://github.com/JavierJF/gpii-wix-installer"
+$installerBranch = "F2FDemo"
 
 # Obtaining useful tools location.
 $installerDir = Join-Path $env:SystemDrive "installer" # a.k.a. C:\installer\
