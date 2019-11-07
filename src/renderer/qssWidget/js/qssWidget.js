@@ -54,7 +54,12 @@
             stepper: ".flc-qssStepperWidget",
             menu: ".flc-qssMenuWidget",
             toggle: ".flc-qssToggleWidget",
-            screenCapture: ".flc-qssScreenCaptureWidget"
+            screenCapture: ".flc-qssScreenCaptureWidget",
+            openUSB: ".flc-qssOpenUSBWidget",
+            volume: ".flc-qssVolumeWidget",
+            office: ".flc-qssOfficeWidget",
+            mySavedSettings: ".flc-qssMySavedSettingsWidget",
+            translateTools: ".flc-qssTranslateToolsWidget"
         },
 
         /**
@@ -65,17 +70,36 @@
             "number": "gpii.qssWidget.stepper",
             "string": "gpii.qssWidget.menu",
             "boolean": "gpii.qssWidget.toggle",
-            "screenCapture": "gpii.qssWidget.screenCapture"
+            "screenCapture": "gpii.qssWidget.screenCapture",
+            "openUSB": "gpii.qssWidget.openUSB",
+            "volume": "gpii.qssWidget.volume",
+            "office": "gpii.qssWidget.office",
+            "mySavedSettings": "gpii.qssWidget.mySavedSettings",
+            "translateTools": "gpii.qssWidget.translateTools"
         },
 
         events: {
+            // Important information
+            // These events are available in the all of the widgets
+            // It can be used to access the main events and utils from them
+            // Usage: {channelNotifier}.events.onQssWidgetHideQssRequested
+
             onWidgetClosed: null,
             onQssWidgetHideQssRequested: null,
             onSettingUpdated: null,
             onQssWidgetHeightChanged: null,
             onQssWidgetSettingAltered: null,
             onQssWidgetNotificationRequired: null,
-            onQssWidgetCreated: null
+            onQssWidgetCreated: null,
+
+            // USB related events
+            onQssOpenUsbRequested: null,
+            onQssUnmountUsbRequested: null,
+
+            // Volume & Mute related event
+            onQssGetVolumeRequested: null,
+            onQssReApplyPreferencesRequired: null,
+            onQssGetEnvironmentalLoginKeyRequested: null
         },
 
         sounds: {},
@@ -114,6 +138,7 @@
                     }
                 },
                 options: {
+                    lastEnvironmentalLoginGpiiKey: "{qssWidget}.options.lastEnvironmentalLoginGpiiKey",
                     sounds: "{qssWidget}.options.sounds",
                     siteConfig: "{qssWidget}.options.siteConfig",
                     activationParams: "{arguments}.1",
@@ -122,6 +147,7 @@
                         messages: {
                             tip: "{qssWidget}.model.setting.tip",
                             extendedTip: "{qssWidget}.model.setting.extendedTip",
+                            switchTitle: "{qssWidget}.model.setting.switchTitle",
                             learnMore: "{qssWidget}.model.messages.learnMore"
                         }
                     },
@@ -207,7 +233,14 @@
                         onQssWidgetHeightChanged:        "{qssWidget}.events.onQssWidgetHeightChanged",
                         onQssWidgetSettingAltered:       "{qssWidget}.events.onQssWidgetSettingAltered",
                         onQssWidgetNotificationRequired: "{qssWidget}.events.onQssWidgetNotificationRequired",
-                        onQssWidgetCreated:              "{qssWidget}.events.onQssWidgetCreated"
+                        onQssWidgetCreated:              "{qssWidget}.events.onQssWidgetCreated",
+                        // USB buttons
+                        onQssOpenUsbRequested:           "{qssWidget}.events.onQssOpenUsbRequested",
+                        onQssUnmountUsbRequested:        "{qssWidget}.events.onQssUnmountUsbRequested",
+                        // Volume button
+                        onQssGetVolumeRequested:         "{qssWidget}.events.onQssGetVolumeRequested",
+                        onQssReApplyPreferencesRequired: "{qssWidget}.events.onQssReApplyPreferencesRequired",
+                        onQssGetEnvironmentalLoginKeyRequested: "{qssWidget}.events.onQssGetEnvironmentalLoginKeyRequested"
                     }
                 }
             }

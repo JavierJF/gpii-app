@@ -14,10 +14,11 @@
  */
 "use strict";
 
-var os            = require("os");
-var fluid         = require("infusion");
-var electron      = require("electron");
-var child_process = require("child_process");
+var os = require("os"),
+    fluid = require("infusion"),
+    electron = require("electron"),
+    child_process = require("child_process"),
+    fs = require("fs");
 
 var gpii = fluid.registerNamespace("gpii");
 fluid.registerNamespace("gpii.app");
@@ -191,15 +192,330 @@ gpii.app.isPointInRect = function (point, rectangle) {
 };
 
 /**
+ * Checks if the buttonList attribute exists in the siteConfig object
+ * @param {Object} siteConfig - instance of the siteConfig object
+ * @return {Boolean} - `true` if there is button list found
+ */
+gpii.app.hasButtonList = function (siteConfig) {
+    return fluid.isValue(siteConfig.buttonList);
+};
+
+/**
+ * Looks for a `id` and matches it to the provided string
+ * return empty array when there is no button found
+ * @param {String} buttonId - the `id` of the button
+ * @param {Object[]} availableButtons - the full settings list
+ * @return {Boolean|Object} - returns false when button is not found,
+ * or the setting object if found
+ */
+gpii.app.findButtonById = function (buttonId, availableButtons) {
+    if (fluid.isValue(buttonId) && fluid.isValue(availableButtons)) {
+        return fluid.find_if(availableButtons, function (button) {
+            if (button.id === buttonId) {
+                return true; // button found
+            }
+            return false;
+        });
+    }
+    return false;
+};
+
+/**
+ * Looks for the specified key list into the data object and returns true only
+ * if ALL of the keys are matched. It sends fluid warning if required
+ * @param {Object} dataObject - a generic data object
+ * @param {Array} expectedKeys - array list of expected keys to exists
+ * @param {Boolean} warningSend - (optional) true if want to send fluid warnings
+ * @param {String} warningTitle - (optional) description of the warnings
+ * @return {Boolean} - returns true if all of the keys are matched
+ */
+gpii.app.expect = function (dataObject, expectedKeys, warningSend, warningTitle) {
+    var result = true;
+
+    if (dataObject && expectedKeys && fluid.isValue(dataObject) && fluid.isValue(expectedKeys)) {
+        fluid.each(expectedKeys, function (key) {
+            if (typeof dataObject[key] === "undefined") {
+                // we have at least one missing key
+                result = false;
+                // sending the warning if needed
+                if (warningSend) {
+                    fluid.log(fluid.logLevel.WARN, (warningTitle ? warningTitle : "gpii.app.expect") + ": missing expected key [" + key + "]");
+                }
+            }
+        });
+    } else {
+        // we have a missing data object, or keys
+        result = false;
+    }
+    return result;
+};
+
+/**
+ * Generates the proper service button schema for the custom button
+ * @param {Object} buttonData - a simple data object with the values needed for the custom button
+ * @return {Object|Boolean} - data object constructed exactly as every other in the settings.json or false
+ */
+gpii.app.generateCustomButton = function (buttonData) {
+    var serviceButtonTypeApp = "custom-launch-app",
+        serviceButtonTypeWeb = "custom-open-url",
+        titleAppNotFound = "Program not found",
+        titleUrlInvalid = "Invalid URL",
+        disabledStyle = "disabledButton",
+        data = false;
+
+    // we need to have the data, with all required fields:
+    // buttonId, buttonName, buttonType, buttonData
+    if (gpii.app.expect(buttonData, ["buttonId", "buttonName", "buttonType", "buttonData"], true, "generateCustomButton")) {
+        var buttonType = buttonData.buttonType === "APP" ? serviceButtonTypeApp : serviceButtonTypeWeb;
+        data = {
+            "id": buttonData.buttonId,
+            "path": buttonType,
+            "schema": {
+                "type": buttonType,
+                "title": buttonData.buttonName,
+                "fullScreen": false
+            },
+            "buttonTypes": ["largeButton", "settingButton"]
+        };
+        if (fluid.isValue(buttonData.popupText)) {
+            // adding the tooltip text as well
+            data.tooltip = buttonData.popupText;
+        }
+        if (fluid.isValue(buttonData.fullScreen) && buttonData.fullScreen) {
+            // adding the full screen option if there is one
+            data.schema.fullScreen = true;
+        }
+        if (buttonData.buttonType === "APP") {
+            // checks if the file exists and its executable
+            if (gpii.app.checkExecutable(buttonData.buttonData)) {
+                // adding the application's path
+                data.schema.filepath = buttonData.buttonData;
+            } else {
+                // changes the button's title
+                data.schema.title = titleAppNotFound;
+                // disables the button
+                data.buttonTypes.push(disabledStyle);
+            }
+        } else {
+            // adding the http if its missing
+            if (buttonData.buttonData.indexOf("https://") === -1 && buttonData.buttonData.indexOf("http://") === -1) {
+                buttonData.buttonData = "http://" + buttonData.buttonData;
+            }
+            // checking if the url looks valid
+            if (gpii.app.checkUrl(buttonData.buttonData)) {
+                // adding the web page's url
+                data.schema.url = buttonData.buttonData;
+            } else {
+                // changes the button's title
+                data.schema.title = titleUrlInvalid;
+                // disables the button
+                data.buttonTypes.push(disabledStyle);
+            }
+        }
+    }
+    return data;
+};
+
+/**
+ * Filters the full button list based on the provided array of `id` attributes
+ * @param {Array} siteConfigButtonList - basic array of strings
+ * @param {Object[]} availableButtons - all available buttons found in settings.json
+ * @return {Object[]} - filtered version of available buttons (same structure)
+ */
+gpii.app.filterButtonList = function (siteConfigButtonList, availableButtons) {
+    /**
+    * These buttons are explicitly selected in the siteConfig, added in the same order.
+    * All of the buttons that don't have `id` at all, they are added at the end of the list
+    * starting tabindex, adding +10 of each new item.
+    */
+    var separatorId = "separator",
+        matchedList = [],
+        afterList = [],
+        tabindex = 100;
+
+    // creating the matchedList
+    // looking for `id` and if matches adding it
+    fluid.each(siteConfigButtonList, function (buttonId) {
+        var matchedButton = false;
+
+        if (typeof buttonId === "object") {
+            // this is custom button
+            matchedButton = gpii.app.generateCustomButton(buttonId);
+        } else {
+            matchedButton = gpii.app.findButtonById(buttonId, availableButtons);
+        }
+        if (matchedButton !== false) {
+            // the separators don't need tabindex
+            if (buttonId !== separatorId) {
+                // adding the proper tabindex
+                matchedButton.tabindex = tabindex;
+                tabindex += 10; // increasing the tabindex
+            }
+            // adding button to the matched ones
+            matchedList.push(matchedButton);
+        }
+    });
+
+    // creating the afterList
+    // looking for all of other buttons that don't have `id` at all
+    fluid.each(availableButtons, function (afterButton) {
+        if (!fluid.isValue(afterButton.id)) { // there is no `id`, adding it
+            // adding the proper index
+            afterButton.tabindex = tabindex;
+            tabindex += 10; // increasing the tabindex
+            // adding button to the matched ones
+            afterList.push(afterButton);
+        }
+    });
+
+    return matchedList.concat(afterList);
+};
+
+/**
  * A custom function for handling activation of the "Open USB" QSS button.
  *
  * In most cases, there's only a single USB drive. But if there's more than one USB drive,
  * then those that do not contain the token file are shown.
+ * @param {Object} browserWindow - An Electron `BrowserWindow` object.
+ * @param {String} messageChannel - The channel to which the message should be sent.
+ * @param {Object} messages - An object containing messages openUsb component.
  */
-gpii.app.openUSB = function() {
+gpii.app.openUSB = function (browserWindow, messageChannel, messages) {
     gpii.windows.getUserUsbDrives().then(function (paths) {
-        fluid.each(paths, function (path) {
-            child_process.exec("explorer.exe \"" + path + "\"");
-        });
+        if (!paths.length) {
+            gpii.app.notifyWindow(browserWindow, messageChannel, messages.noUsbInserted);
+        } else {
+            fluid.each(paths, function (path) {
+                child_process.exec("explorer.exe \"" + path + "\"");
+            });
+        }
     });
+};
+
+/**
+ * A custom function for handling activation of the "Open USB" QSS button.
+ *
+ * Ejects a USB drive - the selected USB drive is the same as the one that would be opened by openUSB.
+ * This performs the same action as "Eject" from the right-click-menu on the drive in Explorer.
+ * @param {Object} browserWindow - An Electron `BrowserWindow` object.
+ * @param {String} messageChannel - The channel to which the message should be sent.
+ * @param {Object} messages - An object containing messages openUsb component.
+ */
+gpii.app.ejectUSB = function (browserWindow, messageChannel, messages) {
+    // Powershell to invoke the "Eject" verb of the drive icon in my computer, which looks something like:
+    //  ((Shell32.Folder)shell).NameSpace(ShellSpecialFolderConstants.ssfDRIVES) // Get "My Computer"
+    //    .ParseName(x:\)    // Get the drive.
+    //    .InvokeVerb(Eject) // Invoke the "Eject" verb of the drive.
+    // Inspired by https://serverfault.com/a/580298r
+    //
+    // It's possible to perform this in C#, however powershell will be used because it needs to be performed in a
+    // 64-bit process, perhaps due to it interacting with the shell.
+    var command = "$drives = (New-Object -comObject Shell.Application).Namespace(0x11)";
+
+    gpii.windows.getUserUsbDrives().then(function (paths) {
+        if (paths.length > 0) {
+            // Call the eject command for each drive.
+            fluid.each(paths, function (path) {
+                command += "; $drives.ParseName('" + path[0] + ":\\').InvokeVerb('Eject')";
+            });
+
+            // The powershell process still needs to hang around, because if the drive is in use it will open a dialog
+            // which is owned by the process.
+            command += "; Sleep 100";
+            // Needs to be called from a 64-bit process
+            gpii.windows.nativeExec("powershell.exe -NoProfile -NonInteractive -ExecutionPolicy ByPass -Command "
+                + command);
+        } else {
+            gpii.app.notifyWindow(browserWindow, messageChannel, messages.ejectUsbDrives);
+        }
+    });
+};
+
+/**
+ * Get the actual volume value. If there are an error or no value return the default
+ * volume value
+ * @param {Object} browserWindow - An Electron `BrowserWindow` object.
+ * @param {String} messageChannel - The channel to which the message should be sent.
+ * @return {Number} - The actual value of the volume
+ */
+gpii.app.getVolumeValue = function (browserWindow, messageChannel) {
+    var defaultVolumeValue = 0.5;
+    try {
+        var volumeValue = gpii.windows.nativeSettingsHandler.GetVolume().value;
+
+        if (isNaN(volumeValue)) {
+            gpii.app.notifyWindow(browserWindow, messageChannel, defaultVolumeValue);
+            return defaultVolumeValue;
+        } else {
+            gpii.app.notifyWindow(browserWindow, messageChannel, volumeValue);
+            return volumeValue;
+        }
+    } catch (err) {
+        fluid.log(fluid.logLevel.WARN, err);
+        return defaultVolumeValue;
+    }
+};
+
+/**
+ * Simple file function to check a path to the executable file
+ * @param {String} executablePath - path to executable file
+ * @return {Boolean} - returns `true` when the file exists and its executable
+ */
+gpii.app.checkExecutable = function (executablePath) {
+    try {
+        var fileProperties = fs.statSync(executablePath);
+        // Check that the file is executable
+        if (fileProperties.mode === parseInt("0100666", 8)) {
+            // returns true only if the file exists and its executable
+            return true;
+        } else {
+            fluid.log(fluid.logLevel.WARN, "checkExecutable: File is not executable - " + executablePath);
+        }
+    } catch (err) {
+        fluid.log(fluid.logLevel.WARN, "checkExecutable: Invalid or missing path - " + executablePath);
+    }
+    // returns false in any other case
+    return false;
+};
+
+/**
+ * Simple function to try to validate the url - posted by Ajay A and contributed to Devshed:
+ * https://www.quora.com/What-is-the-best-way-to-validate-for-a-URL-in-JavaScript
+ * @param {String} url - browser's url
+ * @return {Boolean} - returns `true` when the url looks valid
+ */
+gpii.app.checkUrl = function (url) {
+    // validating the url
+    var pattern = new RegExp("^(https?:\\/\\/)?" + // protocol
+        "((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|" + // domain name and extension
+        "((\\d{1,3}\\.){3}\\d{1,3}))" + // OR ip (v4) address
+        "(\\:\\d+)?" + // port
+        "(\\/[-a-z\\d%@_.~+&:]*)*" + // path
+        "(\\?[;&a-z\\d%@_.,~+&:=-]*)?" + // query string
+        "(\\#[-a-z\\d_]*)?$", "i"); // fragment locator
+    if (!pattern.test(url)) {
+        fluid.log(fluid.logLevel.WARN, "checkUrl: Invalid button url - " + url);
+    } else {
+        // returns true only if the url is valid
+        return true;
+    }
+    // returns false in any other case
+    return false;
+};
+
+/**
+ * Starting a new process with the gpii.windows.startProfcess
+ * @param {String} process - file path to the process executable
+ * @param {Boolean} fullScreen - true/false if the process to be maximized by default
+ */
+gpii.app.startProcess = function (process, fullScreen) {
+    var arg = "", // by default all of the arguments are empty, reserved for future
+        options = {}; // no options by default
+
+    if (fullScreen) {
+        // we are adding the maximized option when the full screen is requested
+        options.windowState = "maximized";
+    }
+    // executing the process
+    gpii.windows.startProcess(process, arg, options);
 };

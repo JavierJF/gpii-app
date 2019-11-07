@@ -15,15 +15,11 @@
         "tooltip": "<p>Save your preferences so you can use them on other computers that have Morphic installed.</p>",
         "title": "Запиши"
     },
-    "gpii_app_qss_settings_psp": {
-        "tooltip": {
-            "keyedIn": "<p>Opens Morphic Settings Panel</p><p>Where you can quickly adjust often-changed settings of yours.</p>",
-            "keyedOut": "<p>Opens Morphic Settings Panel</p><p>Where you can sign in to apply your saved personal settings.</p>"
-        },
-        "title": {
-            "keyedIn": " ",
-            "keyedOut": " "
-        }
+    "gpii_app_qss_settings_mySavedSettings": {
+        "tooltip": "<p>My Saved Settings</p>",
+        "title": "My Saved Settings",
+        "tip": "<p>My Saved Settings</p><ul><li>To apply your saved settings, insert a Morphic USB key.</li><li>To re-apply them, remove and then reinsert the Morphic Key.</li></ul>",
+        "footerTip": "<p><i>The button below will only work if you sign into Morphic automatically when you sign into this computer</i></p>"
     },
     "gpii_app_qss_settings_more": {
         "tooltip": "<p>More options for changing the settings on this computer.</p>",
@@ -59,7 +55,9 @@
     },
     "gpii_app_qss_settings_usb-open": {
         "tooltip": "<p>Отваря всички USB флашки свързани с компютъра.</p>",
-        "title": "Отвори USB"
+        "title": "Отвори USB",
+        "tip": "<p>Вашето USB Устройство</p><p>Поставете USB устройство и го отворете с бутона по-долу.</p>",
+        "footerTip": "<p>Когато сте готови, предотвратете загуба на данни като премахнете USB устройствата безопасно.</p><ol><li>Затворете всички отворени документи от USB устройството и</li><li>Тогава използвайте бутона по долу за да премахнете безопасно USB устройствата</li></ol>"
     },
     "gpii_app_qss_settings_screenCapture": {
         "tooltip": "<p>Направи Снимка.</p><p>Вземи снимка или видео от екрана си.</p>",
@@ -73,5 +71,46 @@
     "gpii_app_qss_settings_cloud-folder-open": {
         "tooltip": "<p>Отваря cloud базирана публична папка.</p>",
         "title": "Quick Folders"
+    },
+    "gpii_app_qss_settings_officeSimplification": {
+        "tooltip": "<p>Опростяване на Microsoft Word.</p><p>Предоставя опростени менюта за Microsoft Word.</p>",
+        "title": "Опрости MS Word",
+        "tip": "<p>Опростяване на Microsoft Word</p><p>Morphic може да опрости менютата в (групите менюта горе-вляво в Word), с цел да направи прогрмата по-лека за хора, които не са свикнали.</p><ul><li>Избери един или повече профила, за да добавиш в Word</li></ul>",
+        "enum": [
+            "Simple (Morphic)",
+            "Essentials (Morphic)",
+            "Рестартирай Word"
+        ]
+    },
+    "gpii_app_qss_settings_common-volume": {
+        "tooltip": "<p>Регулира, включва и изключва силата на звука на Windows.</p>",
+        "title": "Сила и изключване на звука",
+        "tip": "<p>Сила на звука</p>",
+        "extendedTip": "Можете също да промените силата на звука, като използвате иконата на високоговорителя в системната лента (близо до часовника в долната част на екрана).",
+        "switchTitle": "Заглушаване на целия звук"
+    },
+    "gpii_app_qss_settings_launch-documorph": {
+        "tooltip": "<p>Стартирай апликацията DocuMorph.</p>",
+        "title": "Стартирай Docu Morph"
+    },
+    "gpii_app_qss_settings_url-google-drive": {
+        "tooltip": "<p>Отваря Google Drive във браузъра.</p>",
+        "title": "Моят Google Drive"
+    },
+    "gpii_app_qss_settings_url-one-drive": {
+        "tooltip": "<p>Отваря One Drive във браузъра.</p>",
+        "title": "Моят One Drive"
+    },
+    "gpii_app_qss_settings_url-dropbox": {
+        "tooltip": "<p>Отваря Dropbox във браузъра.</p>",
+        "title": "Моят Dropbox"
+    },
+    "gpii_app_qss_settings_snipping-tool": {
+        "tooltip": "<p>Стартирай инструмента за отрязване на екрана.</p>",
+        "title": "Screen Snip"
+    },
+    "gpii_app_qss_settings_url-customize-qss": {
+        "tooltip": "<p>Отваря уеб страница където да промените бутоните в лентата.</p>",
+        "title": "Промени бутоните"
     }
 }

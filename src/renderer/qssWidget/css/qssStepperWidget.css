@@ -23,7 +23,12 @@
 
 
 .fl-qssWidget-footerTip {
-    color: #21932b;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.fl-qssWidget-footerTip a {
+    color: #000000;
 }
 
 .fl-qssWidget-tip p {
@@ -36,7 +41,9 @@
     margin-bottom: 5px;
 }
 
-.fl-qssWidget-tip ul {
+.fl-qssWidget-tip ul, .fl-qssWidget-tip ol,
+.fl-qssWidget-footerTip ul, .fl-qssWidget-footerTip ol
+{
     margin-top: 5px;
     margin-bottom: 0;
     padding-left: 15px;
@@ -208,4 +215,3 @@
 .fl-qssStepperWidget-footer {
     margin-bottom: 15px;
 }
-

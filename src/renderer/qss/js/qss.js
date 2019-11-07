@@ -30,18 +30,32 @@
 
         defaultHandlerGrade: "gpii.qss.buttonPresenter",
         handlerGrades: {
-            "boolean":  "gpii.qss.toggleButtonPresenter",
-            "number":   "gpii.qss.widgetButtonPresenter",
-            "string":   "gpii.qss.widgetButtonPresenter",
-            "close":    "gpii.qss.closeButtonPresenter",
-            "psp":      "gpii.qss.keyInButtonPresenter",
-            "save":     "gpii.qss.saveButtonPresenter",
-            "undo":     "gpii.qss.undoButtonPresenter",
-            "resetAll": "gpii.qss.resetAllButtonPresenter",
-            "more":     "gpii.qss.moreButtonPresenter",
-            "usb-open": "gpii.qss.openUSBButtonPresenter",
+            "boolean":           "gpii.qss.toggleButtonPresenter",
+            "number":            "gpii.qss.widgetButtonPresenter",
+            "string":            "gpii.qss.widgetButtonPresenter",
+            "close":             "gpii.qss.closeButtonPresenter",
+            "mySavedSettings":   "gpii.qss.mySavedSettingsButtonPresenter",
+            "save":              "gpii.qss.saveButtonPresenter",
+            "undo":              "gpii.qss.undoButtonPresenter",
+            "resetAll":          "gpii.qss.resetAllButtonPresenter",
+            "more":              "gpii.qss.moreButtonPresenter",
+            "openUSB":           "gpii.qss.widgetButtonPresenter",
+            "office":            "gpii.qss.widgetButtonPresenter",
             "cloud-folder-open": "gpii.qss.openCloudFolderPresenter",
-            "disabled": "gpii.qss.disabledButtonPresenter"
+            "launch-documorph":  "gpii.qss.launchDocuMorphPresenter",
+            "volume":            "gpii.qss.volumeButtonPresenter",
+            "snipping-tool":     "gpii.qss.snippingToolPresenter",
+            "disabled":          "gpii.qss.disabledButtonPresenter",
+            // custom button grades
+            "custom-launch-app": "gpii.qss.customLaunchAppPresenter",
+            "custom-open-url":   "gpii.qss.customOpenUrlPresenter",
+            // separator grade
+            "separator":         "gpii.qss.separatorButtonPresenter",
+            // url based buttons
+            "url-google-drive":  "gpii.qss.urlGoogleDrivePresenter",
+            "url-one-drive":     "gpii.qss.urlOneDrivePresenter",
+            "url-dropbox":       "gpii.qss.urlDropboxPresenter",
+            "url-customize-qss": "gpii.qss.urlCustomizeQssPresenter"
         },
 
         dynamicContainerMarkup: {
@@ -69,8 +83,7 @@
             onMorePanelRequired: null,
             onUndoRequired: null,
             onResetAllRequired: null,
-            onSaveRequired: null,
-            onPspToggled: null
+            onSaveRequired: null
         },
 
         invokers: {
@@ -232,9 +245,9 @@
                         onQssUndoRequired: "{quickSetStripList}.events.onUndoRequired",
                         onQssResetAllRequired: "{quickSetStripList}.events.onResetAllRequired",
                         onQssSaveRequired: "{quickSetStripList}.events.onSaveRequired",
-                        onQssPspToggled: "{quickSetStripList}.events.onPspToggled",
 
-                        onQssOpenUsbRequested: null
+                        // Custom buttons events
+                        onQssStartProcess: null
                     }
                 }
             }

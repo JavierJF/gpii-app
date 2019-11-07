@@ -39,8 +39,8 @@
 
                 footerTip: "{that}.model.setting.widget.footerTip",
 
-                upperBoundError: "This is highest setting",
-                lowerBoundError: "This is lowest setting"
+                upperBoundError: "This is the highest setting",
+                lowerBoundError: "This is the lowest setting"
             },
             setting: {},
 
@@ -71,7 +71,7 @@
             "setting.value": {
                 func: "{channelNotifier}.events.onQssWidgetSettingAltered.fire",
                 args: ["{that}.model.setting"],
-                includeSource: "settingAlter"
+                includeSource: "fromWidget"
             }
         },
 
@@ -315,7 +315,7 @@
             restrcitedValue = Math.max(restrcitedValue, schema.min);
         }
 
-        that.applier.change("value", restrcitedValue, null, "settingAlter");
+        that.applier.change("value", restrcitedValue, null, "fromWidget");
 
         // Whether a bound was hit
         return value !== restrcitedValue;
@@ -413,7 +413,7 @@
             "onIndicatorClicked.updateValue": {
                 changePath: "setting.value",
                 value: "{arguments}.0",
-                source: "settingAlter"
+                source: "fromWidget"
             }
         }
     });

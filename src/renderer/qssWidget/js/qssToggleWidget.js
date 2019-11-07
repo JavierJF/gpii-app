@@ -38,7 +38,9 @@
             setting: {},
             value: "{that}.model.setting.value",
             messages: {
-                settingTitle: "{that}.model.setting.schema.title"
+                settingTitle: "{that}.model.setting.schema.title",
+                on: null,
+                off: null
             }
         },
 
@@ -46,7 +48,7 @@
             "setting.value": {
                 func: "{channelNotifier}.events.onQssWidgetSettingAltered.fire",
                 args: ["{that}.model.setting"],
-                includeSource: "settingAlter"
+                includeSource: "fromWidget"
             },
             "setting.schema.helpImage": {
                 this: "{that}.dom.helpImage",
@@ -61,7 +63,11 @@
                 container: "{that}.dom.toggleButton",
                 options: {
                     model: {
-                        enabled: "{gpii.qssWidget.toggle}.model.value"
+                        enabled: "{gpii.qssWidget.toggle}.model.value",
+                        messages: {
+                            on: "{gpii.qssWidget.toggle}.model.messages.on",
+                            off: "{gpii.qssWidget.toggle}.model.messages.off"
+                        }
                     },
                     invokers: {
                         toggleModel: {
@@ -81,6 +87,6 @@
      * @param {Component} that - The `gpii.psp.widgets.switch` instance.
      */
     gpii.qssWidget.toggle.toggleModel = function (that) {
-        that.applier.change("enabled", !that.model.enabled, null, "settingAlter");
+        that.applier.change("enabled", !that.model.enabled, null, "fromWidget");
     };
 })(fluid);
